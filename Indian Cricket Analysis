@@ -1,0 +1,56 @@
+# set working directory to the folder where your CSV file is located
+setwd("/Users/garvg/Desktop")
+
+# import CSV file into R as a data frame
+mydata_batting <- read.csv("Batting_Odi.csv", header = TRUE)
+# view the first few rows of the data frame
+head(mydata_batting)
+# view the structure of the data frame
+str(mydata_batting)
+# view a summary of the data frame
+summary(mydata_batting)
+
+# import CSV file into R as a data frame
+mydata_bowling <- read.csv("Bowling_Odi.csv", header = TRUE)
+# view the first few rows of the data frame
+head(mydata_bowling)
+# view the structure of the data frame
+str(mydata_bowling)
+# view a summary of the data frame
+summary(mydata_bowling)
+
+
+# do some analysis on the data
+#follow below
+# calculate the overall batting average and strike rate of each player
+agg_batting <- aggregate(cbind(Runs, Balls, Outs) ~ Name, data = mydata_batting, sum)
+agg_batting$Avg[agg_batting$Outs == 0] <- 0 # handle zero values in Outs column
+agg_batting$Avg[is.na(agg_batting$Avg)] <- 0 # handle missing values in Avg column
+agg_batting$Avg <- agg_batting$Runs / agg_batting$Outs
+agg_batting$SR <- (agg_batting$Runs / agg_batting$Balls) * 100
+agg_batting$batting_points <- (agg_batting$Avg * 0.8) + (agg_batting$SR * 0.2)
+# view the data
+agg_batting
+
+# calculate the overall bowling average and economy rate of each player
+agg_bowling <- aggregate(cbind(Runs, Wickets, Overs) ~ Name, data = mydata_bowling, sum)
+agg_bowling$Avg <- ifelse(agg_bowling$Wickets == 0, Inf, agg_bowling$Runs / agg_bowling$Wickets)
+agg_bowling$Econ <- ifelse(agg_bowling$Overs == 0, Inf, agg_bowling$Runs / agg_bowling$Overs)
+agg_bowling$bowling_points <- (agg_bowling$Avg * 0.2) + (agg_bowling$Econ * 0.8)
+# view the data
+agg_bowling
+
+
+# sort the data frame by batting points in descending order
+agg_batting_sorted <- agg_batting[order(-agg_batting$batting_points),]
+# get the top 6 rows
+top_six_batsmen <- head(agg_batting_sorted, 6)
+# view the data
+top_six_batsmen
+
+# sort the data frame by bowling points in ascending order
+agg_bowling_sorted <- agg_bowling[order(agg_bowling$bowling_points),]
+# get the top 6 rows
+top_six_bowlers <- head(agg_bowling_sorted, 5)
+# view the data
+top_six_bowlers
